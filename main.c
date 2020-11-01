@@ -1,8 +1,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <math.h>
-#include "/usr/include/X11/X.h"
-#include "mlx.h"
+#include "fdf.h"
 
 #define WIDTH_RCT 500
 #define LEN_RCT 500
@@ -56,7 +55,7 @@ int key_press(int key, void *param)
 	printf("Key pressed: %c (%d). Passed %u usec\n", key, key, (unsigned int)usec_total(latest_event, now));
 	latest_event = now;
 	fflush(stdout);
-	draw_rectangle(0, 0, WIDTH_RCT, LEN_RCT, get_color(255, 0, 0, 255));
+	draw_rectangle(0, 0, WIDTH_RCT, LEN_RCT, get_color((char)255, 0, 0, (char)255));
 	return (0);
 }
 
@@ -66,7 +65,7 @@ int key_release(int key, void *param)
 	printf("Key released: %c. Passed %u usec\n", key, (unsigned int)usec_total(latest_event, now));
 	latest_event = now;
 	fflush(stdout);
-	draw_rectangle(0, 0, WIDTH_RCT, LEN_RCT, get_color(0, 0, 0, 255));
+	draw_rectangle(0, 0, WIDTH_RCT, LEN_RCT, get_color(0, 0, 0, (char)255));
 	return (0);
 }
 
@@ -106,7 +105,7 @@ void draw_line(int x0, int y0, int x1, int y1)
 	int color;
 	float coef;
 
-	color = get_color(255, 0, 0, 255);
+	color = get_color((char)255, 0, 0, (char)255);
 	if (y1 == y0) {
 		draw_horisontal_line(x0, y0, x1, y1, color);
 		return ;
@@ -159,6 +158,7 @@ int mouse_release(int button,int x,int y,void *param)
 	printf("Released mouse button %d at (%d, %d)\n", button, x, y);
 	//draw_rectangle(x, y, 50, 50, get_color(0, 0, 0, 255));
 	fflush(stdout);
+	return (0);
 }
 
 int mouse_move(int x,int y,void *param)
@@ -166,6 +166,7 @@ int mouse_move(int x,int y,void *param)
 	(void)param;
 	printf("Moved mouse (%d, %d)\n", x, y);
 	fflush(stdout);
+	return (0);
 }
 
 
@@ -183,7 +184,6 @@ int main()
 	mlx_hook(win_ptr, ButtonRelease, ButtonReleaseMask, mouse_release, NULL);
 	mlx_hook(win_ptr, MotionNotify, ButtonMotionMask, mouse_move, NULL);
 	//mlx_key_hook(win_ptr, deal_key, NULL);
-
 
 	mlx_loop(mlx_ptr);
 }
