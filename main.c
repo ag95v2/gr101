@@ -3,6 +3,9 @@
 #include <math.h>
 #include "fdf.h"
 
+#define SCREEN_WIDTH 1200
+#define SCREEN_HEIGHT 900
+
 #define WIDTH_RCT 500
 #define LEN_RCT 500
 
@@ -45,6 +48,9 @@ int get_color(char r, char g, char b, char t)
 	((char *)(&res))[1] = g;
 	((char *)(&res))[2] = r;
 	((char *)(&res))[3] = t;
+
+	// Debug!
+	res &= 0x00ffffff;
 	return (res);
 
 }
@@ -52,17 +58,20 @@ int get_color(char r, char g, char b, char t)
 int key_press(int key, void *param)
 {
 	gettimeofday(&now, NULL);
-	printf("Key pressed: %c (%d). Passed %u usec\n", key, key, (unsigned int)usec_total(latest_event, now));
+	printf("Key pressed: %c (%d). Passed %u usec\n", key, key,
+			(unsigned int)usec_total(latest_event, now));
 	latest_event = now;
 	fflush(stdout);
-	draw_rectangle(0, 0, WIDTH_RCT, LEN_RCT, get_color((char)255, 0, 0, (char)255));
+	draw_rectangle(0, 0, WIDTH_RCT, LEN_RCT,
+			get_color((char)255, 0, 0, (char)255));
 	return (0);
 }
 
 int key_release(int key, void *param)
 {
 	gettimeofday(&now, NULL);
-	printf("Key released: %c. Passed %u usec\n", key, (unsigned int)usec_total(latest_event, now));
+	printf("Key released: %c. Passed %u usec\n", key,
+			(unsigned int)usec_total(latest_event, now));
 	latest_event = now;
 	fflush(stdout);
 	draw_rectangle(0, 0, WIDTH_RCT, LEN_RCT, get_color(0, 0, 0, (char)255));
@@ -97,6 +106,16 @@ int nearest_int(double x) {
 	return ((int)floor(x) + 1);
 }
 
+/*
+ * red = 0
+ * green = 1
+ */
+int gradient_color(pos, len)
+{
+	return (get_color(floor(255 * (double)pos / (double)len),
+				      floor(255 * (1 - (double)pos /(double) len)), 0, 0));
+}
+
 void draw_line(int x0, int y0, int x1, int y1)
 {
 	int x_offset;
@@ -116,16 +135,19 @@ void draw_line(int x0, int y0, int x1, int y1)
 	}
 	coef = (double)(y1 - y0) / (double)(x1 - x0);
 
-	printf("Drawing line from (%d, %d) to (%d %d); coef = %f\n", x0, y0, x1, y1, coef);
+	printf("Drawing line from (%d, %d) to (%d %d); coef = %f\n",
+			x0, y0, x1, y1, coef);
 	x_offset = 0;
 	current_y = y0;
 	while (x0 + x_offset != x1) {
 		y_offset = nearest_int(coef * x_offset);
 		while ((current_y != y0 + y_offset) && current_y != y1) {
-			mlx_pixel_put(mlx_ptr, win_ptr, x0 + x_offset, current_y, color);
+			mlx_pixel_put(mlx_ptr, win_ptr, x0 + x_offset,
+					current_y, color);
 			current_y += current_y < y0 + y_offset ? 1 : -1;
 		}
-		mlx_pixel_put(mlx_ptr, win_ptr, x0 + x_offset, y0 + y_offset, color);
+		mlx_pixel_put(mlx_ptr, win_ptr, x0 + x_offset, 
+				y0 + y_offset, color);
 		printf("Putting pixel (%d %d)\n", x0 + x_offset, y0 + y_offset);
 		x_offset += x1 > x0 ? 1 : -1;
 	}
@@ -172,8 +194,8 @@ int mouse_move(int x,int y,void *param)
 
 int main()
 {
-	int x_max = 800;
-	int y_max = 600;
+	int x_max = SCREEN_WIDTH;
+	int y_max = SCREEN_HEIGHT;
 
 	mlx_ptr = mlx_init();
 	win_ptr = mlx_new_window(mlx_ptr, x_max, y_max, "W1");
